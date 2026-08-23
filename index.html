@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Victor Printers — Customer & Billing Portal</title>
+<link rel="stylesheet" href="css/styles.css">
+<script>
+// Catches any JS error and shows it directly on the page instead of failing silently,
+// so problems are visible even without opening the browser console.
+window.addEventListener('error', function (e) {
+  showFatalError((e.error && e.error.message) || e.message || 'Unknown script error');
+});
+window.addEventListener('unhandledrejection', function (e) {
+  showFatalError((e.reason && e.reason.message) || String(e.reason) || 'Unknown promise rejection');
+});
+function showFatalError(msg) {
+  var bar = document.getElementById('fatalErrorBar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'fatalErrorBar';
+    bar.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#dc2626;color:#fff;padding:12px 20px;font:13px -apple-system,Segoe UI,Arial,sans-serif;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,.2);';
+    document.body.appendChild(bar);
+  }
+  bar.textContent = '⚠ A script error occurred: ' + msg + ' — please screenshot this and report it.';
+}
+</script>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="brand"><div class="logo">V</div>Victor Printers</div>
+    <div class="nav-item active" id="nav-dashboard" onclick="VP.app.showDashboard()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" id="nav-customers" onclick="VP.app.showCustomers()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Customers
+    </div>
+
+    <div class="nav-divider">
+      <div class="nav-section-label">DATA</div>
+      <div class="nav-item" onclick="VP.app.exportData()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+        Export data
+      </div>
+      <div class="nav-item" onclick="document.getElementById('importFile').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+        Import data
+      </div>
+      <input type="file" id="importFile" accept="application/json" class="hidden" onchange="VP.app.importData(event)">
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="searchInput" placeholder="Search customer by name, ID, or phone">
+      </div>
+      <div class="topbar-right">
+        <div class="bell"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><div class="dot"></div></div>
+        <div class="profile-menu-wrap">
+          <div class="user-block" onclick="VP.app.toggleProfileMenu(event)">
+            <div style="text-align:right;">
+              <div class="user-name">Jeyaseelan</div>
+              <div class="user-role">Super Admin</div>
+            </div>
+            <div class="avatar">J</div>
+          </div>
+          <div class="profile-dropdown" id="profileDropdown" onclick="event.stopPropagation()">
+            <div class="pd-header">
+              <div class="pd-name">Jeyaseelan</div>
+              <div class="pd-role">Super Admin</div>
+            </div>
+            <div class="pd-item danger" onclick="VP.app.resetApplication()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
+              Reset Application
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <div class="storage-banner" id="storageBanner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>IndexedDB isn't available here, so changes only last for this session. Use <strong>Export data</strong> to save a backup, and <strong>Import data</strong> to restore it later.</span>
+      </div>
+
+      <!-- ============ DASHBOARD (HOME) — recent bills ============ -->
+      <div id="view-dashboard">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">VICTOR PRINTERS PORTAL</div>
+            <h1 class="page-title">Dashboard</h1>
+          </div>
+          <div class="head-actions">
+            <button class="btn btn-primary" onclick="VP.app.openBillAddModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+              New Bill
+            </button>
+            <button class="btn btn-primary" onclick="VP.app.openCustomerAddModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+              New Customer
+            </button>
+          </div>
+        </div>
+
+        <div class="stat-row stat-row-1">
+          <div class="stat-card hero">
+            <div class="stat-top">
+              <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg></div>
+            </div>
+            <div class="stat-label">This Month's Billing</div>
+            <div class="stat-value" id="stat-monthly-total">₹0</div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="section-head">
+            <h2 class="section-title">Recently Added Bills</h2>
+          </div>
+          <div class="table-toolbar">
+            <div class="filters"></div>
+            <select id="recentBillsSort" class="sortby-select">
+              <option value="date-desc">Sort by: Date (Newest first)</option>
+              <option value="date-asc">Sort by: Date (Oldest first)</option>
+            </select>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Customer Name</th><th>Date</th><th>Bill No.</th><th>Description</th><th>Qty</th><th>Amount</th><th>Remarks</th></tr>
+            </thead>
+            <tbody id="recentBillsBody"></tbody>
+          </table>
+          <div class="table-footer">
+            <span id="recentBillsShowing">Showing 0 bills</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ CUSTOMERS (LIST) ============ -->
+      <div id="view-customers" class="hidden">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">VICTOR PRINTERS PORTAL</div>
+            <h1 class="page-title">Customer List</h1>
+          </div>
+          <div class="head-actions">
+            <div class="search page-search">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input id="customerSearchInput" placeholder="Search by Customer ID, name, or job description">
+            </div>
+            <button class="btn btn-primary" onclick="VP.app.openCustomerAddModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+              New Customer
+            </button>
+          </div>
+        </div>
+
+        <div class="stat-row stat-row-1">
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+              <span class="pill">Live</span>
+            </div>
+            <div class="stat-label">Total Customers</div>
+            <div class="stat-value" id="stat-total-customers">0</div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-toolbar">
+            <div class="filters"></div>
+            <select id="sortFilter" class="sortby-select">
+              <option value="name-asc">Sort by: Name (A–Z)</option>
+              <option value="name-desc">Sort by: Name (Z–A)</option>
+              <option value="newest">Sort by: Most Recent Bill (Date)</option>
+              <option value="oldest">Sort by: Oldest Bill (Date)</option>
+            </select>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Customer ID</th><th>Customer Name</th><th>Phone Number</th><th>Last Bill Date</th><th>Total Billed</th>
+              </tr>
+            </thead>
+            <tbody id="customerTbody"></tbody>
+          </table>
+          <div class="table-footer">
+            <span id="showingText">Showing 0 entries</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ CUSTOMER DETAIL ============ -->
+      <div id="view-detail" class="hidden">
+        <div class="back-link" onclick="VP.app.showCustomers()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+          Back to Customer List
+        </div>
+
+        <div class="profile-card">
+          <div>
+            <span class="badge-id badge-id-standalone" id="d-id">ID: —</span>
+            <h1 class="cust-title" id="d-name">—</h1>
+            <div class="meta-row">
+              <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span id="d-phone">—</span></span>
+            </div>
+          </div>
+          <div class="profile-actions">
+            <div class="search page-search" id="invoiceSearchWrap">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input id="invoiceSearchInput" placeholder="Search by Invoice ID or description">
+            </div>
+            <button class="icon-btn" title="Edit customer" onclick="VP.customer.openModal('edit', VP.app.state.currentDetailId)">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+            </button>
+            <button class="icon-btn danger" title="Delete customer" onclick="VP.customer.remove(VP.app.state.currentDetailId)">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
+            </button>
+            <button class="btn btn-primary" onclick="VP.app.openBillAddModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+              Create New Bill
+            </button>
+          </div>
+        </div>
+
+        <div class="kpi-row kpi-row-2">
+          <div class="kpi-card">
+            <div class="kpi-top"><span class="kpi-label">Total Bills</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+            </div>
+            <div class="kpi-value" id="d-total-bills">0 <span class="unit">invoices</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--blue);"></div></div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top"><span class="kpi-label">Total Amount</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>
+            </div>
+            <div class="kpi-value" id="d-total-amount">₹0.00</div>
+            <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--teal);"></div></div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="section-head">
+            <h2 class="section-title">Billing History</h2>
+          </div>
+          <div class="table-toolbar">
+            <div class="filters"></div>
+            <select id="billingHistorySort" class="sortby-select">
+              <option value="date-desc">Sort by: Date (Newest first)</option>
+              <option value="date-asc">Sort by: Date (Oldest first)</option>
+            </select>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Date</th><th>Bill No.</th><th>Description</th><th>Qty</th><th>Amount</th><th>Remarks</th></tr>
+            </thead>
+            <tbody id="billingHistoryBody"></tbody>
+          </table>
+          <div class="table-footer">
+            <span id="d-showing">Showing 0 entries</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADD/EDIT CUSTOMER MODAL ============ -->
+<div class="overlay" id="customerModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 class="modal-title" id="customerModalTitle">Add New Customer</h3>
+      <button class="modal-close" onclick="VP.app.closeModal('customerModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field full" id="f-cust-name"><label>Customer Name <span class="req">*</span></label><input id="in-cust-name" placeholder="e.g., Dravidan Hospital"><div class="field-error">Please enter a customer name.</div></div>
+      <div class="field full"><label>Phone Number <span class="opt">(Optional)</span></label><input id="in-cust-phone" placeholder="+91 98765 43210"></div>
+    </div>
+    <div class="modal-foot">
+      <span class="modal-note">Saved to this browser automatically</span>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" onclick="VP.app.closeModal('customerModal')">Cancel</button>
+        <button class="btn btn-teal" id="customerSaveBtn" onclick="VP.customer.submit()">Save Customer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADD/EDIT BILL MODAL ============ -->
+<div class="overlay" id="billModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 class="modal-title" id="billModalTitle">Add New Bill</h3>
+      <button class="modal-close" onclick="VP.app.closeModal('billModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Bill Number <span class="opt">(leave blank if none)</span></label><input id="in-bill-no" placeholder="e.g., INV006"></div>
+      <div class="field" id="f-bill-customer"><label>Customer Name <span class="req">*</span></label>
+        <select id="in-bill-customer"><option value="">Select Customer</option></select>
+        <div class="field-error">Please select a customer.</div>
+      </div>
+      <div class="field"><label>Date</label><input id="in-bill-date" type="date"></div>
+      <div class="field"><label>Qty <span class="opt">(Optional)</span></label><input id="in-bill-qty" type="number" min="0" step="1" placeholder="e.g., 100"></div>
+      <div class="field" id="f-bill-amount"><label>Amount <span class="req">*</span></label><input id="in-bill-amount" type="number" min="0" step="0.01" placeholder="Amount"><div class="field-error">Please enter a valid amount.</div></div>
+      <div class="field full"><label>Description <span class="opt">(Optional)</span></label><input id="in-bill-description" placeholder="e.g., Wedding invitation cards"></div>
+       <div class="field full"><label>Remarks <span class="opt">(Optional)</span></label><input id="in-bill-remarks" placeholder="e.g., Urgent delivery"></div>
+    </div>
+    <div class="modal-foot">
+      <span class="modal-note">Saved to this browser automatically</span>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" onclick="VP.app.closeModal('billModal')">Cancel</button>
+        <button class="btn btn-teal" id="billSaveBtn" onclick="VP.bill.submit()">Save Bill</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VIEW BILL POPUP (read-only, opens on click) ============ -->
+<div class="overlay" id="viewBillModal">
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <h3 class="modal-title" id="viewBillTitle">Bill</h3>
+      <button class="modal-close" onclick="VP.bill.closeViewModal()">✕</button>
+    </div>
+    <div class="modal-body single" id="viewBillBody"></div>
+    <div class="modal-foot">
+      <span></span>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-danger btn-sm" onclick="VP.bill.deleteFromView()">Delete</button>
+        <button class="btn btn-primary btn-sm" onclick="VP.bill.editFromView()">Edit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CONFIRM DIALOG (delete / reset) ============ -->
+<div class="overlay" id="confirmModal">
+  <div class="modal modal-sm">
+    <div class="modal-body single">
+      <div class="confirm-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <h3 class="modal-title" id="confirmTitle" style="margin-bottom:8px;">Are you sure?</h3>
+      <p class="confirm-text" id="confirmMessage"></p>
+    </div>
+    <div class="modal-foot">
+      <span></span>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" id="confirmCancelBtn">Cancel</button>
+        <button class="btn btn-danger solid" id="confirmActionBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Load order matters: utils/storage first, then feature modules, then app.js last. -->
+<script src="js/utils.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/customer.js"></script>
+<script src="js/bill.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
