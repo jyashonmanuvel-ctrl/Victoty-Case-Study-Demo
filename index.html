@@ -39,19 +39,6 @@ function showFatalError(msg) {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Customers
     </div>
-
-    <div class="nav-divider">
-      <div class="nav-section-label">DATA</div>
-      <div class="nav-item" onclick="VP.app.exportData()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
-        Export data
-      </div>
-      <div class="nav-item" onclick="document.getElementById('importFile').click()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
-        Import data
-      </div>
-      <input type="file" id="importFile" accept="application/json" class="hidden" onchange="VP.app.importData(event)">
-    </div>
   </div>
 
   <!-- MAIN -->
@@ -62,6 +49,17 @@ function showFatalError(msg) {
         <input id="searchInput" placeholder="Search customer by name, ID, or phone">
       </div>
       <div class="topbar-right">
+        <div class="data-actions">
+          <button class="btn btn-ghost btn-sm" title="Export data" onclick="VP.app.exportData()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+            <span class="btn-label">Export</span>
+          </button>
+          <button class="btn btn-ghost btn-sm" title="Import data" onclick="document.getElementById('importFile').click()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+            <span class="btn-label">Import</span>
+          </button>
+          <input type="file" id="importFile" accept="application/json" class="hidden" onchange="VP.app.importData(event)">
+        </div>
         <div class="bell"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><div class="dot"></div></div>
         <div class="profile-menu-wrap">
           <div class="user-block" onclick="VP.app.toggleProfileMenu(event)">
@@ -104,33 +102,16 @@ function showFatalError(msg) {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
               New Bill
             </button>
-            <button class="btn btn-primary" onclick="VP.app.openCustomerAddModal()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-              New Customer
-            </button>
-          </div>
-        </div>
-
-        <div class="stat-row stat-row-1">
-          <div class="stat-card hero">
-            <div class="stat-top">
-              <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg></div>
-            </div>
-            <div class="stat-label">This Month's Billing</div>
-            <div class="stat-value" id="stat-monthly-total">₹0</div>
           </div>
         </div>
 
         <div class="table-card">
           <div class="section-head">
             <h2 class="section-title">Recently Added Bills</h2>
-          </div>
-          <div class="table-toolbar">
-            <div class="filters"></div>
-            <select id="recentBillsSort" class="sortby-select">
-              <option value="date-desc">Sort by: Date (Newest first)</option>
-              <option value="date-asc">Sort by: Date (Oldest first)</option>
-            </select>
+            <button class="btn btn-primary btn-sm" onclick="VP.app.openCustomerAddModal()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+              New Customer
+            </button>
           </div>
           <table>
             <thead>
@@ -163,17 +144,6 @@ function showFatalError(msg) {
           </div>
         </div>
 
-        <div class="stat-row stat-row-1">
-          <div class="stat-card">
-            <div class="stat-top">
-              <div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-              <span class="pill">Live</span>
-            </div>
-            <div class="stat-label">Total Customers</div>
-            <div class="stat-value" id="stat-total-customers">0</div>
-          </div>
-        </div>
-
         <div class="table-card">
           <div class="table-toolbar">
             <div class="filters"></div>
@@ -193,7 +163,8 @@ function showFatalError(msg) {
             <tbody id="customerTbody"></tbody>
           </table>
           <div class="table-footer">
-            <span id="showingText">Showing 0 entries</span>
+            <span id="showingText">Showing 0 out of 0 customers</span>
+            <div class="pagination" id="customerPagination"></div>
           </div>
         </div>
       </div>
@@ -207,9 +178,10 @@ function showFatalError(msg) {
 
         <div class="profile-card">
           <div>
-            <span class="badge-id badge-id-standalone" id="d-id">ID: —</span>
             <h1 class="cust-title" id="d-name">—</h1>
             <div class="meta-row">
+              <span id="d-id">ID: —</span>
+              <span class="meta-sep">|</span>
               <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span id="d-phone">—</span></span>
             </div>
           </div>
@@ -252,13 +224,6 @@ function showFatalError(msg) {
           <div class="section-head">
             <h2 class="section-title">Billing History</h2>
           </div>
-          <div class="table-toolbar">
-            <div class="filters"></div>
-            <select id="billingHistorySort" class="sortby-select">
-              <option value="date-desc">Sort by: Date (Newest first)</option>
-              <option value="date-asc">Sort by: Date (Oldest first)</option>
-            </select>
-          </div>
           <table>
             <thead>
               <tr><th>Date</th><th>Bill No.</th><th>Description</th><th>Qty</th><th>Amount</th><th>Remarks</th></tr>
@@ -290,7 +255,7 @@ function showFatalError(msg) {
       <span class="modal-note">Saved to this browser automatically</span>
       <div style="display:flex;gap:10px;">
         <button class="btn btn-ghost" onclick="VP.app.closeModal('customerModal')">Cancel</button>
-        <button class="btn btn-teal" id="customerSaveBtn" onclick="VP.customer.submit()">Save Customer</button>
+        <button class="btn btn-primary" id="customerSaveBtn" onclick="VP.customer.submit()">Save Customer</button>
       </div>
     </div>
   </div>
@@ -319,7 +284,7 @@ function showFatalError(msg) {
       <span class="modal-note">Saved to this browser automatically</span>
       <div style="display:flex;gap:10px;">
         <button class="btn btn-ghost" onclick="VP.app.closeModal('billModal')">Cancel</button>
-        <button class="btn btn-teal" id="billSaveBtn" onclick="VP.bill.submit()">Save Bill</button>
+        <button class="btn btn-primary" id="billSaveBtn" onclick="VP.bill.submit()">Save Bill</button>
       </div>
     </div>
   </div>
@@ -370,7 +335,6 @@ function showFatalError(msg) {
 <script src="js/storage.js"></script>
 <script src="js/customer.js"></script>
 <script src="js/bill.js"></script>
-<script src="js/dashboard.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

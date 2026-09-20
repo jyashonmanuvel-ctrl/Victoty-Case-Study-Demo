@@ -12,6 +12,7 @@ VP.app = (function () {
     customers: [],
     bills: [],
     currentDetailId: null,
+    customerPage: 1, // current page of the Customer List (10 per page)
     editingCustomerId: null,
     editingBillId: null,
     activeView: 'dashboard' // 'dashboard' | 'customers' | 'detail'
@@ -47,7 +48,6 @@ VP.app = (function () {
   function showCustomers() { state.currentDetailId = null; setActiveView('customers'); }
 
   function renderCurrentView() {
-    VP.dashboard.renderStats(state);
     if (state.activeView === 'dashboard') {
       VP.bill.renderRecentBills(state);
     } else if (state.activeView === 'customers') {
@@ -150,11 +150,10 @@ VP.app = (function () {
 
   function wireEvents() {
     document.getElementById('searchInput').addEventListener('input', VP.utils.debounce(renderCurrentView, 150));
-    document.getElementById('customerSearchInput').addEventListener('input', VP.utils.debounce(renderCurrentView, 150));
+    const backToFirstPage = () => { state.customerPage = 1; renderCurrentView(); };
+    document.getElementById('customerSearchInput').addEventListener('input', VP.utils.debounce(backToFirstPage, 150));
     document.getElementById('invoiceSearchInput').addEventListener('input', VP.utils.debounce(renderCurrentView, 150));
-    document.getElementById('sortFilter').addEventListener('change', renderCurrentView);
-    document.getElementById('recentBillsSort').addEventListener('change', renderCurrentView);
-    document.getElementById('billingHistorySort').addEventListener('change', renderCurrentView);
+    document.getElementById('sortFilter').addEventListener('change', backToFirstPage);
     document.querySelectorAll('.overlay').forEach(o => {
       if (NO_BACKDROP_CLOSE.includes(o.id)) return;
       o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });

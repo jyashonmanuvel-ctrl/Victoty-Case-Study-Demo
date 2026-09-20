@@ -9,6 +9,8 @@ window.VP = window.VP || {};
 VP.customer = (function () {
   const { money, formatDate, initialsOf, nextSequentialId, showToast, confirm } = VP.utils;
 
+  const PAGE_SIZE = 10; // customers per page on the Customer List
+
   function billsFor(state, custId) {
     return state.bills
       .filter(b => b.customerId === custId)
@@ -54,9 +56,47 @@ VP.customer = (function () {
     return list;
   }
 
+  /** Page numbers to show, e.g. [1, '…', 4, 5, 6, '…', 20]. Short lists show every page. */
+  function pageItems(current, total) {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    const items = [1];
+    const from = Math.max(2, current - 1);
+    const to = Math.min(total - 1, current + 1);
+    if (from > 2) items.push('…');
+    for (let p = from; p <= to; p++) items.push(p);
+    if (to < total - 1) items.push('…');
+    items.push(total);
+    return items;
+  }
+
+  function renderPagination(current, totalPages) {
+    const el = document.getElementById('customerPagination');
+    if (totalPages <= 1) { el.innerHTML = ''; return; }
+    const btn = (label, page, opts = {}) =>
+      `<button class="page-btn${opts.active ? ' active' : ''}" ${opts.disabled ? 'disabled' : ''}
+        ${opts.active ? 'aria-current="page"' : ''} onclick="VP.customer.goToPage(${page})">${label}</button>`;
+    el.innerHTML =
+      btn('‹ Prev', current - 1, { disabled: current === 1 }) +
+      pageItems(current, totalPages).map(p =>
+        p === '…' ? '<span class="page-gap">…</span>' : btn(p, p, { active: p === current })
+      ).join('') +
+      btn('Next ›', current + 1, { disabled: current === totalPages });
+  }
+
+  function goToPage(page) {
+    VP.app.state.customerPage = page;
+    VP.app.renderCurrentView();
+  }
+
   function renderList(state) {
     const tbody = document.getElementById('customerTbody');
     const list = getFilteredSortedCustomers(state);
+
+    // Paginate: 10 per page. Clamp in case the list shrank (search, delete, import).
+    const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+    state.customerPage = Math.min(Math.max(1, state.customerPage || 1), totalPages);
+    const startIdx = (state.customerPage - 1) * PAGE_SIZE;
+    const pageList = list.slice(startIdx, startIdx + PAGE_SIZE);
 
     if (state.customers.length === 0) {
       tbody.innerHTML = `<tr class="empty-row"><td colspan="5"><div class="empty-state">
@@ -71,7 +111,7 @@ VP.customer = (function () {
         <span>Try a different search term.</span>
       </div></td></tr>`;
     } else {
-      tbody.innerHTML = list.map(c => {
+      tbody.innerHTML = pageList.map(c => {
         const total = totalAmountFor(state, c.id);
         const last = lastBillDate(state, c.id);
         return `<tr class="row" onclick="VP.customer.openDetail('${c.id}')">
@@ -83,8 +123,22 @@ VP.customer = (function () {
         </tr>`;
       }).join('');
     }
-    document.getElementById('showingText').textContent =
-      `Showing ${list.length} of ${state.customers.length} ${state.customers.length === 1 ? 'entry' : 'entries'}`;
+
+    // Footer text:  "Showing 4 out of 4 customers"  (everything fits on one page)
+    //               "Showing 1 to 10 out of 100 customers"  (multiple pages)
+    const total = list.length;
+    const noun = total === 1 ? 'customer' : 'customers';
+    let text;
+    if (totalPages === 1 || total === 0) {
+      text = `Showing ${total} out of ${total} ${noun}`;
+    } else {
+      const from = startIdx + 1;
+      const to = startIdx + pageList.length;
+      text = `Showing ${from} to ${to} out of ${total} ${noun}`;
+    }
+    if (total !== state.customers.length) text += ` (filtered from ${state.customers.length})`;
+    document.getElementById('showingText').textContent = text;
+    renderPagination(state.customerPage, totalPages);
   }
 
   /* ---------------- Add / Edit modal ---------------- */
@@ -193,7 +247,7 @@ VP.customer = (function () {
   }
 
   return {
-    renderList, openModal, submit, remove, openDetail, renderDetail,
+    renderList, goToPage, openModal, submit, remove, openDetail, renderDetail,
     billsFor, totalAmountFor, lastBillDate
   };
 })();

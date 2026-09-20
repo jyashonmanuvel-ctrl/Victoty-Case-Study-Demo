@@ -184,11 +184,8 @@ VP.bill = (function () {
       );
     }
 
-    const sort = document.getElementById('billingHistorySort').value; // date-desc (default) | date-asc
-    list.sort((a, b) => {
-      const cmp = (a.date || '').localeCompare(b.date || '');
-      return sort === 'date-asc' ? cmp : -cmp;
-    });
+    // Always newest first (the sort dropdown was removed from this table).
+    list.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
     if (totalCount === 0) {
       body.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state">
@@ -219,7 +216,6 @@ VP.bill = (function () {
   function renderRecentBills(state) {
     const body = document.getElementById('recentBillsBody');
     const q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
-    const sort = document.getElementById('recentBillsSort').value; // date-desc (default) | date-asc
 
     let list = state.bills.slice();
     if (q) {
@@ -229,10 +225,10 @@ VP.bill = (function () {
         (b.description || '').toLowerCase().includes(q)
       );
     }
+    // Newest first; ties broken by when the bill was added, most recent first.
     list.sort((a, b) => {
-      const cmp = (a.date || '').localeCompare(b.date || '');
-      if (cmp !== 0) return sort === 'date-asc' ? cmp : -cmp;
-      // Tie-break on when the bill was added, most recent first.
+      const cmp = (b.date || '').localeCompare(a.date || '');
+      if (cmp !== 0) return cmp;
       return (b.createdAt || 0) - (a.createdAt || 0);
     });
     const recent = list.slice(0, 8);
