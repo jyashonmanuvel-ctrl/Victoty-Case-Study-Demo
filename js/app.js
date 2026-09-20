@@ -15,7 +15,7 @@ VP.app = (function () {
     customerPage: 1, // current page of the Customer List (10 per page)
     editingCustomerId: null,
     editingBillId: null,
-    activeView: 'dashboard' // 'dashboard' | 'customers' | 'detail'
+    activeView: 'customers' // 'customers' (landing) | 'dashboard' (Recent Bills) | 'detail'
   };
 
   const seedCustomers = [
@@ -114,7 +114,7 @@ VP.app = (function () {
         await VP.storage.replaceAll(VP.storage.STORE_BILLS, cleanBills);
         state.customers = await VP.storage.getAll(VP.storage.STORE_CUSTOMERS);
         state.bills = await VP.storage.getAll(VP.storage.STORE_BILLS);
-        showDashboard();
+        showCustomers();
         showToast('✓ Imported ' + state.customers.length + ' customers, ' + state.bills.length + ' bills');
       } catch (err) {
         showToast('✕ Import failed — file is not valid exported JSON', true);
@@ -136,7 +136,7 @@ VP.app = (function () {
       state.bills = [];
       await VP.storage.clear(VP.storage.STORE_CUSTOMERS);
       await VP.storage.clear(VP.storage.STORE_BILLS);
-      showDashboard();
+      showCustomers();
       showToast('✓ Application reset');
     });
   }
@@ -153,7 +153,6 @@ VP.app = (function () {
     const backToFirstPage = () => { state.customerPage = 1; renderCurrentView(); };
     document.getElementById('customerSearchInput').addEventListener('input', VP.utils.debounce(backToFirstPage, 150));
     document.getElementById('invoiceSearchInput').addEventListener('input', VP.utils.debounce(renderCurrentView, 150));
-    document.getElementById('sortFilter').addEventListener('change', backToFirstPage);
     document.querySelectorAll('.overlay').forEach(o => {
       if (NO_BACKDROP_CLOSE.includes(o.id)) return;
       o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
@@ -165,7 +164,7 @@ VP.app = (function () {
     // calculator work immediately — even if IndexedDB is slow, blocked by
     // another tab, or unavailable in this browser.
     wireEvents();
-    setActiveView('dashboard');
+    setActiveView('customers');
 
     let available = false;
     try {

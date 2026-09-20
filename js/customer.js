@@ -24,7 +24,7 @@ VP.customer = (function () {
     return bs.length ? bs[0].date : null;
   }
 
-  /* ---------------- Customer List page (search + sort) ----------------
+  /* ---------------- Customer List page (search, sorted by name) ----------------
      Search matches Customer ID, Customer Name, or the description of any
      bill belonging to that customer — handy for "who was that wedding
      invite job for?" type lookups.
@@ -32,8 +32,6 @@ VP.customer = (function () {
 
   function getFilteredSortedCustomers(state) {
     const q = (document.getElementById('customerSearchInput').value || '').toLowerCase().trim();
-    const sort = document.getElementById('sortFilter').value; // name-asc (default) | name-desc | newest | oldest
-
     let list = state.customers.slice();
 
     if (q) {
@@ -43,15 +41,8 @@ VP.customer = (function () {
       });
     }
 
-    list.sort((a, b) => {
-      if (sort === 'newest' || sort === 'oldest') {
-        const da = lastBillDate(state, a.id) || '0000-00-00';
-        const db = lastBillDate(state, b.id) || '0000-00-00';
-        return sort === 'oldest' ? da.localeCompare(db) : db.localeCompare(da);
-      }
-      const cmp = a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
-      return sort === 'name-desc' ? -cmp : cmp;
-    });
+    // Always Name (A–Z); the sort dropdown was removed from this table.
+    list.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 
     return list;
   }

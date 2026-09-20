@@ -31,13 +31,13 @@ function showFatalError(msg) {
   <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="brand"><div class="logo">V</div>Victor Printers</div>
-    <div class="nav-item active" id="nav-dashboard" onclick="VP.app.showDashboard()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-      Dashboard
-    </div>
-    <div class="nav-item" id="nav-customers" onclick="VP.app.showCustomers()">
+    <div class="nav-item active" id="nav-customers" onclick="VP.app.showCustomers()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Customers
+    </div>
+    <div class="nav-item" id="nav-dashboard" onclick="VP.app.showDashboard()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+      Recent Bills
     </div>
   </div>
 
@@ -90,69 +90,21 @@ function showFatalError(msg) {
         <span>IndexedDB isn't available here, so changes only last for this session. Use <strong>Export data</strong> to save a backup, and <strong>Import data</strong> to restore it later.</span>
       </div>
 
-      <!-- ============ DASHBOARD (HOME) — recent bills ============ -->
-      <div id="view-dashboard">
-        <div class="page-head">
-          <div>
-            <div class="eyebrow">VICTOR PRINTERS PORTAL</div>
-            <h1 class="page-title">Dashboard</h1>
-          </div>
-          <div class="head-actions">
-            <button class="btn btn-primary" onclick="VP.app.openBillAddModal()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-              New Bill
-            </button>
-          </div>
-        </div>
-
+      <!-- ============ CUSTOMERS (LIST) — landing page ============ -->
+      <div id="view-customers">
         <div class="table-card">
           <div class="section-head">
-            <h2 class="section-title">Recently Added Bills</h2>
-            <button class="btn btn-primary btn-sm" onclick="VP.app.openCustomerAddModal()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-              New Customer
-            </button>
-          </div>
-          <table>
-            <thead>
-              <tr><th>Customer Name</th><th>Date</th><th>Bill No.</th><th>Description</th><th>Qty</th><th>Amount</th><th>Remarks</th></tr>
-            </thead>
-            <tbody id="recentBillsBody"></tbody>
-          </table>
-          <div class="table-footer">
-            <span id="recentBillsShowing">Showing 0 bills</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ============ CUSTOMERS (LIST) ============ -->
-      <div id="view-customers" class="hidden">
-        <div class="page-head">
-          <div>
-            <div class="eyebrow">VICTOR PRINTERS PORTAL</div>
-            <h1 class="page-title">Customer List</h1>
-          </div>
-          <div class="head-actions">
-            <div class="search page-search">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              <input id="customerSearchInput" placeholder="Search by Customer ID, name, or job description">
+            <h2 class="section-title">Customer List</h2>
+            <div class="section-actions">
+              <div class="search page-search">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input id="customerSearchInput" placeholder="Search by Customer ID, name, or job description">
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="VP.app.openCustomerAddModal()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                New Customer
+              </button>
             </div>
-            <button class="btn btn-primary" onclick="VP.app.openCustomerAddModal()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-              New Customer
-            </button>
-          </div>
-        </div>
-
-        <div class="table-card">
-          <div class="table-toolbar">
-            <div class="filters"></div>
-            <select id="sortFilter" class="sortby-select">
-              <option value="name-asc">Sort by: Name (A–Z)</option>
-              <option value="name-desc">Sort by: Name (Z–A)</option>
-              <option value="newest">Sort by: Most Recent Bill (Date)</option>
-              <option value="oldest">Sort by: Oldest Bill (Date)</option>
-            </select>
           </div>
           <table>
             <thead>
@@ -165,6 +117,30 @@ function showFatalError(msg) {
           <div class="table-footer">
             <span id="showingText">Showing 0 out of 0 customers</span>
             <div class="pagination" id="customerPagination"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ RECENT BILLS ============ -->
+      <div id="view-dashboard" class="hidden">
+        <div class="table-card">
+          <div class="section-head">
+            <h2 class="section-title">Recently Added Bills</h2>
+            <div class="section-actions">
+              <button class="btn btn-primary btn-sm" onclick="VP.app.openBillAddModal()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                New Bill
+              </button>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Customer Name</th><th>Date</th><th>Bill No.</th><th>Description</th><th>Qty</th><th>Amount</th><th>Remarks</th></tr>
+            </thead>
+            <tbody id="recentBillsBody"></tbody>
+          </table>
+          <div class="table-footer">
+            <span id="recentBillsShowing">Showing 0 bills</span>
           </div>
         </div>
       </div>
